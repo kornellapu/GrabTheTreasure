@@ -16,8 +16,13 @@ int main()
     Game::setState(GAMEPLAYING);
     Game::render();
 
-    HeroAI ai = HeroAI( *Game::getMap() );
-    ai.aStarSearchPath(Game::getMap()->getHero()->getPosition(), Game::getMap()->getTile(1, 7));
+    //HeroAI ai = HeroAI( *Game::getMap() );
+    //ai.executePlan( ai.plan() );
+
+    //std::string mapCopyString = Game::getMap()->toString();
+    //Map copyMap = Map(mapCopyString);
+
+    //Map newMap = Game::getMap()->clone()
 
     while (Game::getState() == GAMEPLAYING) {
 

@@ -19,6 +19,7 @@ class Treasure;
 class Interactable;
 class Map;
 class UIHeroInterface;
+class HeroAI;
 
 enum Graphics {
     EMPTY = ' ',
@@ -33,6 +34,7 @@ enum Graphics {
 };
 
 enum Direction {
+    NODIRECTION = -1,
     UP = 0,
     RIGHT = 1,
     DOWN = 2,
@@ -88,6 +90,7 @@ class Game {
     static GameState state;
     static Map map;
     static UIHeroInterface ui;
+    static HeroAI ai;
 public:
     static void setState(GameState newState);
     static bool handleKeyInputs();
@@ -100,7 +103,7 @@ public:
 
 class Drawable {
 public:
-    virtual void draw() = 0;
+    virtual void draw(std::ostream& out) = 0;
 };
 
 class UIHeroInterface : public Drawable {
@@ -108,7 +111,7 @@ class UIHeroInterface : public Drawable {
     Hero* hero = NULL;
 public:
     UIHeroInterface(Hero& hero);
-    void draw();
+    void draw(std::ostream& out = std::cout);
 };
 
 class Tile : public Drawable{
@@ -124,22 +127,23 @@ public:
     int getX();
     int getY();
 	virtual bool acceptHero(Hero& hero);
-    virtual Tile* AIProbeStep(Hero& hero, Tile* from);
+    virtual Tile* AIProbeStep(bool interacting, Hero& hero, Tile* from);
     void removeHero();
 	Tile* getNeighbourIn(Direction dir);
     Tile** getNeighbours();
     void setNeighbourIn(Direction dir, Tile& neighbour);
+    Direction getDirection(Tile* to);
     void setInteractable(Interactable& interactable);
     void removeInteractable();
-    virtual void draw();
+    virtual void draw(std::ostream& out);
 };
 
 class Wall : public Tile {
 public:
     Wall(int x, int y);
     virtual bool acceptHero(Hero& hero);
-    virtual void draw();
-    virtual Tile* AIProbeStep(Hero& hero, Tile* from);
+    virtual void draw(std::ostream& out);
+    virtual Tile* AIProbeStep(bool interacting, Hero& hero, Tile* from);
 };
 
 class Trap : public Tile {
@@ -147,15 +151,15 @@ class Trap : public Tile {
 public:
     Trap(int x, int y);
     bool acceptHero(Hero& hero);
-    virtual void draw();
-    virtual Tile* AIProbeStep(Hero& hero, Tile* from);
+    virtual void draw(std::ostream& out);
+    virtual Tile* AIProbeStep(bool interacting, Hero& hero, Tile* from);
 };
 
 class Exit : public Tile {
 public:
     Exit(int x, int y);
     bool acceptHero(Hero& hero);
-    virtual void draw();
+    virtual void draw(std::ostream& out);
 };
 
 class Hero : public Drawable {
@@ -174,12 +178,14 @@ public:
     void heal();
     void damage();
     int getHealth();
+    void setHealth(int amount);
     bool hasTreasure();
+    bool hasWeapon();
     bool isEscaped();
     void wield(Weapon& weapon);
     void stash(Treasure& treasure);
     void escape();
-    virtual void draw();
+    virtual void draw(std::ostream& out);
 
 };
 
@@ -193,27 +199,27 @@ class Monster : public Interactable {
 public:
     void interact(Hero& hero);
     Hero AIProbeInteract(const Hero& hero);
-    virtual void draw();
+    virtual void draw(std::ostream& out);
 };
 
 class Weapon : public Interactable {
 public:
     void interact(Hero& hero);
     Hero AIProbeInteract(const Hero& hero);
-    virtual void draw();
+    virtual void draw(std::ostream& out);
 };
 
 class Potion : public Interactable {
     void interact(Hero& hero);
     Hero AIProbeInteract(const Hero& hero);
-    virtual void draw();
+    virtual void draw(std::ostream& out);
 };
 
 class Treasure : public Interactable {
 public:
     void interact(Hero& hero);
     Hero AIProbeInteract(const Hero& hero);
-    virtual void draw();
+    virtual void draw(std::ostream& out);
 };
 
 class Map {
@@ -223,32 +229,51 @@ class Map {
     int width;
     int height;
 
+    void createMapFrom(std::string fileString);
+    void copyHeroState(Hero* otherHero);
+    void destroyMap();
     void createField(char c, std::pair<int, int> coordinate);
     Tile* createTile(char c, std::pair<int, int> coordinate);
     Interactable* createInteractable(char c);
     void setNeighbourConnections();
+    std::string toString() const;
+    Tile* findFirst(char toFind);
+    std::vector<Tile*> findAll(char toFind);
 
     friend class HeroAI;
 
 public:
-    Map(std::string filePath);
-    void drawAll();
-    Tile* getTile(int index);
-    Tile* getTile(int x, int y);
-    Hero* getHero();
+    Map(std::string fileString);
+    Map(const Map& other);
+    Map& operator=(const Map& other);
     ~Map();
 
+    void drawAll(std::ostream& out = std::cout);
+    Tile* getTile(int index);
+    Tile* getTile(int x, int y);
+    Hero* getHero() const;
+    Map clone();
 };
 
 class HeroAI {
     Map& playMap;
+    bool executing = false;
     std::vector<Tile*> path;
-    std::vector<int> getIndexOf(std::vector<Tile*> tiles);
+    std::vector<Tile*> aStarSearchPath(Map& currentMap, bool interacting, Tile* start, Tile* goal);
     int heuristic(Tile* from, Tile* to);
+    
+    Tile* chooseTargetWithTraps(Map& map);
+    Tile* chooseTarget(Map& map, std::string& errorText);
+    Tile* isOnPath(std::vector<Tile*> path, char toFind);
+    std::vector<Tile*> moveHeroToTarget(Map& map, Tile* target);
+    std::vector<Tile*> findShortestPathToAny(char goalTile, Map& map, bool interacting, Tile* start);
 
 public:
     HeroAI(Map& map);
-    void aStarSearchPath(Tile* start, Tile* goal);
+    std::vector<std::pair<int, int>> planWithTraps();
+    std::vector<std::pair<int, int>> plan();
+    void executePlan(std::vector<std::pair<int, int>> coordinates );
+    void toggleAI();
 };
 
 #endif /* GRABTHETREASURE_H */
