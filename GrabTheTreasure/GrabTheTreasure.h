@@ -64,14 +64,18 @@ enum Color {
 };
 
 
-enum Settings {
-    CONSOL_WIDTH = 80,
-    CONSOL_HEIGHT = 25
-};
+const int CONSOL_WIDTH  = 80;
+const int CONSOL_HEIGHT = 25;
+
+const int TEXT_POS_X = 29;
+const int TEXT_POS_Y = 14;
+const std::string pressKeyExitText = "Press any key to Exit ";
+void showText(int x, int y, std::string text);
 
 void showConsoleCursor(bool showFlag);
 void resizeConsolWindow(int width, int height);
 void setConsolCursorTo(int line, int cloumn = 0);
+void setConsolCursorToOnMap(int x, int y);
 void setConsolColor(Color textColor, Color backgroundColor = Color::BLACK);
 
 std::string readFile(std::string filePath);
@@ -99,6 +103,8 @@ public:
     static Hero* getHero();
     static Map* getMap();
     static void render();
+    static bool isAIExecuting();
+    static void animateStartScreen(int frameIndex);
 };
 
 class Drawable {
@@ -252,28 +258,34 @@ public:
     Tile* getTile(int index);
     Tile* getTile(int x, int y);
     Hero* getHero() const;
-    Map clone();
+    int getHeight();
+    int getWidth();
 };
 
 class HeroAI {
     Map& playMap;
     bool executing = false;
     std::vector<Tile*> path;
-    std::vector<Tile*> aStarSearchPath(Map& currentMap, bool interacting, Tile* start, Tile* goal);
+    std::vector< std::vector<std::pair<int, int>> > validPaths;
+    std::vector<Tile*> aStarSearchPath(Map currentMap, bool interacting, Tile* start, Tile* goal);
+    bool checkValidPath(Map map, std::vector<std::pair<int, int>> pathCoordinates);
+    std::vector<std::pair<int, int>> toCoordinates(const std::vector<Tile*>& path);
+    std::vector<std::pair<int, int>> concatCoordinates(const std::vector<std::pair<int, int>>& front, const std::vector<std::pair<int, int>>& back);
     int heuristic(Tile* from, Tile* to);
     
-    Tile* chooseTargetWithTraps(Map& map);
     Tile* chooseTarget(Map& map, std::string& errorText);
     Tile* isOnPath(std::vector<Tile*> path, char toFind);
     std::vector<Tile*> moveHeroToTarget(Map& map, Tile* target);
     std::vector<Tile*> findShortestPathToAny(char goalTile, Map& map, bool interacting, Tile* start);
 
+    void searchPaths(Map map, std::vector<std::pair<int, int>> coordinatesSoFar);
+
 public:
     HeroAI(Map& map);
-    std::vector<std::pair<int, int>> planWithTraps();
     std::vector<std::pair<int, int>> plan();
     void executePlan(std::vector<std::pair<int, int>> coordinates );
     void toggleAI();
+    bool isAIExecuting();
 };
 
 #endif /* GRABTHETREASURE_H */

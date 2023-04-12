@@ -1,11 +1,11 @@
 xxxxxxxxxxxxxxxxxxxx
-xk s         x  i  x
-xcxxxxxxxxxx xxxxx x
-x s              x x
-xxxx xxxxxxxxxxxxx x
+xk s    xxxxxx i   x
+xxxxxxx xxxxxxxxxx x
+x                  x
+xxxxxxx xxxxxxxxxxxx
 x  c               x
-xx xxxx xxxxxxxxxxxx
-xa x               x
+x xxxxx xxxxxxxxxxxx
+xax                x
 x xxxxxxxxxxxx xxxxx
 x   s             hj
 xxxxxxxxxxxxxxxxxxxx

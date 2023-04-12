@@ -11,18 +11,19 @@ int main()
     Game::setState(GAMESTART);
     Game::render();
 
-    waitAnyConsolKeyPress();
+    bool waiting = true;
+    int frameCount = 0;
+    while(waiting){
+        Game::animateStartScreen(frameCount);
+
+        if(GetAsyncKeyState(VK_RETURN) & 0x01)
+            waiting = false;
+
+        frameCount++;
+    }
 
     Game::setState(GAMEPLAYING);
     Game::render();
-
-    //HeroAI ai = HeroAI( *Game::getMap() );
-    //ai.executePlan( ai.plan() );
-
-    //std::string mapCopyString = Game::getMap()->toString();
-    //Map copyMap = Map(mapCopyString);
-
-    //Map newMap = Game::getMap()->clone()
 
     while (Game::getState() == GAMEPLAYING) {
 
@@ -33,7 +34,9 @@ int main()
         Game::checkGameEnd();
     }
 
-    waitAnyConsolKeyPress(2000);
+    showText(TEXT_POS_X, TEXT_POS_Y, pressKeyExitText);
+
+    waitAnyConsolKeyPress(100);
 
     SetConsoleOutputCP(originalCodePage);
 };

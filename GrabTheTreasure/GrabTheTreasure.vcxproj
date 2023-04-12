@@ -134,6 +134,7 @@
     <ClInclude Include="GrabTheTreasure.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="gem_animation.txt" />
     <Text Include="map.txt" />
     <Text Include="concept_game_ui.txt" />
     <Text Include="ui_forfeit.txt" />

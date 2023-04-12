@@ -21,8 +21,7 @@ bool Tile::acceptHero(Hero& hero) {
         return false;
 }
 
-void Tile::removeHero()
-{
+void Tile::removeHero(){
     presentHero = NULL;
 }
 
@@ -47,18 +46,15 @@ Direction Tile::getDirection(Tile* to) {
     return NODIRECTION;
 }
 
-void Tile::setInteractable(Interactable& interactable)
-{
+void Tile::setInteractable(Interactable& interactable){
     presentInteractable = &interactable;
 }
 
-void Tile::removeInteractable()
-{
+void Tile::removeInteractable(){
     presentInteractable = NULL;
 }
 
-void Tile::draw(std::ostream& out)
-{
+void Tile::draw(std::ostream& out){
     if (presentHero != NULL)
         presentHero->draw(out);
     else if (presentInteractable != NULL)
@@ -69,23 +65,19 @@ void Tile::draw(std::ostream& out)
 
 Tile::Tile(int x, int y) : x(x), y(y){ }
 
-int Tile::getX()
-{
+int Tile::getX(){
     return x;
 }
 
-int Tile::getY()
-{
+int Tile::getY(){
     return y;
 }
 
-Tile** Tile::getNeighbours()
-{
+Tile** Tile::getNeighbours(){
     return neighbours;
 }
 
-Tile* Tile::AIProbeStep(bool interacting, Hero& hero, Tile* from)
-{
+Tile* Tile::AIProbeStep(bool interacting, Hero& hero, Tile* from){
     if (interacting && presentInteractable != NULL) {
         Hero probeHero = presentInteractable->AIProbeInteract(hero);
     
@@ -103,8 +95,7 @@ bool Wall::acceptHero(Hero& hero) {
     return false;
 }
 
-void Wall::draw(std::ostream& out)
-{
+void Wall::draw(std::ostream& out){
     setConsolColor(BLACK, GREY);
     out << (char)WALL;
     setConsolColor(WHITE);
@@ -145,8 +136,7 @@ bool Trap::acceptHero(Hero& hero){
         return false;
 }
 
-void Trap::draw(std::ostream& out)
-{
+void Trap::draw(std::ostream& out){
     if (isArmed) {
         setConsolColor(GREY);
         out << (char)TRAP;
@@ -189,8 +179,7 @@ bool Exit::acceptHero(Hero& hero){
     return true;
 }
 
-void Exit::draw(std::ostream& out)
-{
+void Exit::draw(std::ostream& out){
     setConsolColor(WHITE, GREY);
     out << (char)EXIT;
     setConsolColor(WHITE);
@@ -210,8 +199,7 @@ void Hero::setPosition(Tile& position) {
     this->position = &position;
 }
 
-Tile* Hero::getPosition()
-{
+Tile* Hero::getPosition(){
     return position;
 }
 
@@ -221,20 +209,18 @@ void Hero::heal() {
 }
 
 void Hero::damage() {
-    if (weapon != NULL)
+    if (weapon != NULL && health > 0)
         health -= 1;
     if (weapon == NULL) {
         health = 0;
     }
 }
 
-int Hero::getHealth()
-{
+int Hero::getHealth(){
     return health;
 }
 
-bool Hero::hasTreasure()
-{
+bool Hero::hasTreasure(){
     return treasure != NULL;
 }
 
@@ -250,30 +236,30 @@ void Hero::escape() {
     escaped = true;
 }
 
-void Hero::draw(std::ostream& out)
-{
+void Hero::draw(std::ostream& out){
+
     if (health > 0) {
+        if(Game::isAIExecuting()){
+            setConsolColor(WHITE, BLUE);
+        }
         out << (char)HERO;
     }
     else {
         setConsolColor(BLACK, RED);
         out << (char)HERO;
-        setConsolColor(WHITE);
     }
+    setConsolColor(WHITE);
 }
 
-bool Hero::isEscaped()
-{
+bool Hero::isEscaped(){
     return escaped;
 }
 
-void Hero::setHealth(int amount)
-{
+void Hero::setHealth(int amount){
     health = amount;
 }
 
-bool Hero::hasWeapon()
-{
+bool Hero::hasWeapon(){
     return weapon != NULL;
 }
 
@@ -281,15 +267,13 @@ void Monster::interact(Hero& hero){
     hero.damage();
 }
 
-void Monster::draw(std::ostream& out)
-{
+void Monster::draw(std::ostream& out){
     setConsolColor(LIGHTPURPLE);
     out << (char)MONSTER;
     setConsolColor(WHITE);
 }
 
-Hero Monster::AIProbeInteract(const Hero& hero)
-{
+Hero Monster::AIProbeInteract(const Hero& hero){
     Hero probeHero = Hero(hero);
     probeHero.damage();
     return probeHero;
@@ -299,34 +283,29 @@ void Weapon::interact(Hero& hero){
     hero.wield(*this);
 }
 
-void Weapon::draw(std::ostream& out)
-{
+void Weapon::draw(std::ostream& out){
     setConsolColor(LIGHTYELLOW);
     out << (char)WEAPON;
     setConsolColor(WHITE);
 }
 
-Hero Weapon::AIProbeInteract(const Hero& hero)
-{
+Hero Weapon::AIProbeInteract(const Hero& hero){
     Hero probeHero = hero;
     probeHero.wield( *this );
     return probeHero;
 }
 
-void Potion::interact(Hero& hero)
-{
+void Potion::interact(Hero& hero){
     hero.heal();
 }
 
-void Potion::draw(std::ostream& out)
-{
+void Potion::draw(std::ostream& out){
     setConsolColor(LIGHTGREEN);
     out << (char)POTION;
     setConsolColor(WHITE);
 }
 
-Hero Potion::AIProbeInteract(const Hero& hero)
-{
+Hero Potion::AIProbeInteract(const Hero& hero){
     Hero probeHero = hero;
     probeHero.heal();
     return probeHero;
@@ -336,15 +315,13 @@ void Treasure::interact(Hero& hero){
     hero.stash(*this);
 }
 
-void Treasure::draw(std::ostream& out)
-{
+void Treasure::draw(std::ostream& out){
     setConsolColor(YELLOW);
     out << (char)TREASURE;
     setConsolColor(WHITE);
 }
 
-Hero Treasure::AIProbeInteract(const Hero& hero)
-{
+Hero Treasure::AIProbeInteract(const Hero& hero){
     Hero probeHero = hero;
     probeHero.stash( *this );
     return probeHero;
@@ -394,6 +371,7 @@ void Map::copyHeroState(Hero* otherHero){
 }
 
 void Map::destroyMap(){
+
     for (int i = 0; i < tiles.size(); i++) {
         delete tiles[i];
     }
@@ -404,8 +382,8 @@ void Map::destroyMap(){
         delete hero;
 }
 
-void Map::createField(char c, std::pair<int, int> coordinate)
-{
+void Map::createField(char c, std::pair<int, int> coordinate){
+
     Tile* newTile = createTile(c, coordinate);
     if (newTile == NULL)
         return;
@@ -429,8 +407,7 @@ void Map::createField(char c, std::pair<int, int> coordinate)
     tiles.push_back(newTile);
 }
 
-Tile* Map::createTile(char c, std::pair<int, int> coordinate)
-{
+Tile* Map::createTile(char c, std::pair<int, int> coordinate){
     Tile* newTile = NULL;
 
     switch (c)
@@ -455,8 +432,7 @@ Tile* Map::createTile(char c, std::pair<int, int> coordinate)
     return newTile;
 }
 
-Interactable* Map::createInteractable(char c)
-{
+Interactable* Map::createInteractable(char c){
     Interactable* newInteractable = NULL;
 
     switch (c)
@@ -480,8 +456,8 @@ Interactable* Map::createInteractable(char c)
     return newInteractable;
 }
 
-void Map::setNeighbourConnections()
-{
+void Map::setNeighbourConnections(){
+
     for (int i = 0; i < width * height; i++) {
         Tile* upT    = NULL;
         Tile* rightT = NULL;
@@ -523,8 +499,7 @@ std::string Map::toString() const{
     return mapStream.str();
 }
 
-Tile* Map::findFirst(char toFind)
-{
+Tile* Map::findFirst(char toFind){
     std::stringstream characters;
 
     for (Tile* tile : tiles) {
@@ -552,13 +527,11 @@ std::vector<Tile*> Map::findAll(char toFind){
     return foundTargets;
 }
 
-Map::Map(std::string fileString)
-{
+Map::Map(std::string fileString){
     createMapFrom(fileString);
 }
 
-Map::Map(const Map& other)
-{
+Map::Map(const Map& other){
     createMapFrom( other.toString() );
     copyHeroState( other.getHero() );
 }
@@ -573,20 +546,26 @@ Map& Map::operator=(const Map& other){
     copyHeroState( other.getHero() );
 }
 
-Map::~Map()
-{
+int Map::getHeight(){
+    return height;
+}
+
+int Map::getWidth() {
+    return width;
+}
+
+Map::~Map(){
     destroyMap();
 }
 
-void Map::drawAll(std::ostream& out)
-{
-    setConsolCursorTo(((int)CONSOL_HEIGHT - 5) / 2 - height / 2);
+void Map::drawAll(std::ostream& out){
+    setConsolCursorTo( (CONSOL_HEIGHT - 5) / 2 - height / 2);
 
     for (int i = 0; i < width * height; i++) {
         if (i % width == 0) {
             std::cout << std::endl;
             
-            int leftOffsetCount = ((int)CONSOL_WIDTH - width) / 2;
+            int leftOffsetCount = (CONSOL_WIDTH - width) / 2;
             std::string leftOffset = "";
             leftOffset.append(leftOffsetCount, ' ');
             std::cout << leftOffset;
@@ -596,18 +575,16 @@ void Map::drawAll(std::ostream& out)
     }
 }
 
-Hero* Map::getHero() const
-{
+Hero* Map::getHero() const{
     return hero;
 }
 
-Tile* Map::getTile(int index)
-{
+Tile* Map::getTile(int index){
     return tiles[index];
 }
 
-Tile* Map::getTile(int x, int y)
-{
+Tile* Map::getTile(int x, int y){
+
     for (int i = 0; i < width * height; i++) {
         if (tiles[i]->getX() == x && tiles[i]->getY() == y)
             return tiles[i];
@@ -616,13 +593,12 @@ Tile* Map::getTile(int x, int y)
     return NULL;
 }
 
-UIHeroInterface::UIHeroInterface(Hero& hero)
-{
+UIHeroInterface::UIHeroInterface(Hero& hero){
     this->hero = &hero;
 }
 
-void UIHeroInterface::draw(std::ostream& out)
-{
+void UIHeroInterface::draw(std::ostream& out){
+
     state++;
     state = state % 2;
 
@@ -642,9 +618,9 @@ void UIHeroInterface::draw(std::ostream& out)
             treasure = ".oO8Oo.";
     }
 
-    setConsolCursorTo( (int)CONSOL_HEIGHT - 3 );
+    setConsolCursorTo( CONSOL_HEIGHT - 3 );
 
-    int leftOffsetCount = ((int)CONSOL_WIDTH - 51) / 2;
+    int leftOffsetCount = (CONSOL_WIDTH - 51) / 2;
     std::string leftOffset = "";
     leftOffset.append(leftOffsetCount, ' ');
 
@@ -695,8 +671,22 @@ void UIHeroInterface::draw(std::ostream& out)
 
 }
 
-void showConsoleCursor(bool showFlag)
+void showText(int x, int y, std::string text)
 {
+    bool inputArrived = false;
+    int currentCharacter = 0;
+    setConsolCursorTo(y, x);
+
+    while( !inputArrived && currentCharacter < text.size()){
+        std::cout << text[currentCharacter];
+        currentCharacter++;
+
+        Sleep(100);
+    }
+}
+
+void showConsoleCursor(bool showFlag){
+
     HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
 
     CONSOLE_CURSOR_INFO     cursorInfo;
@@ -706,8 +696,8 @@ void showConsoleCursor(bool showFlag)
     SetConsoleCursorInfo(out, &cursorInfo);
 }
 
-void resizeConsolWindow(int width, int height)
-{
+void resizeConsolWindow(int width, int height){
+
     HANDLE hOut;
     SMALL_RECT DisplayArea = { 0, 0, 0, 0 };
 
@@ -733,8 +723,8 @@ void resizeConsolWindow(int width, int height)
     SetConsoleScreenBufferSize(hOut, newSize);
 }
 
-void setConsolCursorTo(int line, int column)
-{
+void setConsolCursorTo(int line, int column){
+
     COORD coord;
     coord.X = column;
     coord.Y = line;
@@ -744,8 +734,15 @@ void setConsolCursorTo(int line, int column)
     SetConsoleCursorPosition(hConsole, coord);
 }
 
-void setConsolColor(Color textColor, Color backgroundColor)
-{
+void setConsolCursorToOnMap(int x, int y){
+    int mapYStart = (CONSOL_HEIGHT - 5) / 2 - Game::getMap()->getHeight() / 2;
+    int mapXStart = (CONSOL_WIDTH - Game::getMap()->getWidth()) / 2;
+
+    setConsolCursorTo(mapYStart+1 + y, mapXStart + x);
+}
+
+void setConsolColor(Color textColor, Color backgroundColor){
+
     if (enableColoring) {
         int finalColor = backgroundColor << 4 | textColor;
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -753,8 +750,8 @@ void setConsolColor(Color textColor, Color backgroundColor)
     }
 }
 
-std::string readFile(std::string filePath)
-{
+std::string readFile(std::string filePath){
+
     std::ifstream inFileStream(filePath);
     std::string line;
     std::string finalFile = "";
@@ -788,8 +785,8 @@ void waitAnyConsolKeyPress(int timeOffsetMilliSec) {
     }
 }
 
-bool Game::handleKeyInputs()
-{
+bool Game::handleKeyInputs(){
+
     bool inputArrived = false;
     Direction moveDirection;
 
@@ -829,8 +826,7 @@ Map Game::map = Map( readFile("map.txt") );
 UIHeroInterface Game::ui = UIHeroInterface(*map.getHero());
 HeroAI Game::ai = HeroAI( Game::map );
 
-void Game::setState(GameState newState)
-{
+void Game::setState(GameState newState){
     if (state == GAMESTART && newState == GAMESTART) {
         if (IsValidCodePage(65001))
             SetConsoleOutputCP(65001);
@@ -853,18 +849,16 @@ void Game::setState(GameState newState)
     }
 }
 
-GameState Game::getState()
-{
+GameState Game::getState(){
     return state;
 }
 
 void Game::render() {
     if (state == GAMEPLAYING) {
+
         system("CLS");
         map.drawAll();
         ui.draw();
-
-
     }
     else if (state == GAMESTART || state == GAMEFORFEIT || state == GAMEOVER || state == GAMEVICTORY) {
         std::string filePath;
@@ -895,8 +889,8 @@ void Game::render() {
     } 
 }
 
-void Game::checkGameEnd()
-{
+void Game::checkGameEnd(){
+
     if (map.getHero()->getHealth() == 0) {
         render();
         Sleep(2000);
@@ -916,14 +910,37 @@ void Game::checkGameEnd()
     }
 }
 
-Map* Game::getMap()
-{
+Map* Game::getMap(){
     return &map;
 }
 
-Hero* Game::getHero()
-{
+Hero* Game::getHero(){
     return map.getHero();
+}
+
+bool Game::isAIExecuting(){
+    return ai.isAIExecuting();
+}
+
+void Game::animateStartScreen(int frameIndex){
+    frameIndex = frameIndex % 14;
+
+    std::string animationFile = readFile("gem_animation.txt");
+    int startLine = 5;
+    int startColumn = 37;
+
+    std::string delimiter = "\n";
+    size_t pos = 0;
+    std::vector<std::string> lines;
+    while ((pos = animationFile.find(delimiter)) != std::string::npos) {
+        lines.push_back(animationFile.substr(0, pos));
+        animationFile.erase(0, pos + delimiter.length());
+    }
+
+    setConsolCursorTo(startLine, startColumn);
+    std::cout << lines[frameIndex];
+
+    Sleep(100);
 }
 
 HeroAI::HeroAI(Map& map) : playMap(map){ }
@@ -952,7 +969,35 @@ std::vector<Tile*> reconstructPath(std::map<Tile*, Tile*>& collection, Tile* sta
     return path;
 }
 
-std::vector<Tile*> HeroAI::aStarSearchPath(Map& currentMap, bool interacting, Tile* start, Tile* goal) {
+bool HeroAI::checkValidPath(Map map, std::vector<std::pair<int, int>> pathCoordinates){
+    if(pathCoordinates.size() == 0)
+        return true;
+
+    Hero* hero = map.getHero();
+
+    for(int next = 1; next < pathCoordinates.size(); next++){
+        int current = next-1;
+        Tile* currentTile = map.getTile( pathCoordinates[current].first, pathCoordinates[current].second );
+        Tile* nextTile = map.getTile( pathCoordinates[next].first, pathCoordinates[next].second );
+
+        if(hero->getPosition() == currentTile){
+            Direction moveDirection = currentTile->getDirection(nextTile);
+            map.getHero()->move(moveDirection);
+        }
+
+        if(hero->getHealth() == 0)
+            return false;
+    }
+
+    Tile* lastTile = map.getTile( pathCoordinates.back().first, pathCoordinates.back().second );
+    if(hero->getPosition() == lastTile){
+        return true;
+    }
+
+    return false;
+}
+
+std::vector<Tile*> HeroAI::aStarSearchPath(Map currentMap, bool interacting, Tile* start, Tile* goal) {
     using namespace std;
     if (goal == NULL)
         return vector<Tile*>();
@@ -1004,41 +1049,122 @@ std::vector<Tile*> HeroAI::aStarSearchPath(Map& currentMap, bool interacting, Ti
         }
     }
 
-    return reconstructPath(cameFrom, start, goal);
-}
-
-int HeroAI::heuristic(Tile* from, Tile* to)
-{
-    return abs(to->getX() - from->getX()) + abs(to->getY() - from->getY());
-}
-
-std::vector<std::pair<int, int>> HeroAI::plan() {
-    std::string errorText = "";
-    Map* mapSimulation = new Map( playMap.clone() );
-    std::vector<Tile*> movementHistory;
-
-    Tile* newTarget = chooseTarget(*mapSimulation, errorText);
-
-    while( !mapSimulation->getHero()->hasTreasure() && errorText.size() == 0 ){
-        std::vector<Tile*> movement = moveHeroToTarget(*mapSimulation, newTarget);
-        movementHistory.insert( movementHistory.end(), movement.begin(), movement.end() );
-
-        newTarget = chooseTarget(*mapSimulation, errorText);
+    vector<Tile*> reconstructedPath = reconstructPath(cameFrom, start, goal);
+    if(interacting){
+        if( checkValidPath(currentMap, toCoordinates(reconstructedPath)) ){
+            return reconstructedPath;
+        }
+        else{
+            return vector<Tile*>();
+        }
     }
 
+    return reconstructedPath;
+}
+
+std::vector<std::pair<int, int>> HeroAI::toCoordinates(const std::vector<Tile*>& path){
     std::vector<std::pair<int, int>> coordinates;
-    for(Tile* tile : movementHistory){
+
+    for(auto tile : path){
         coordinates.push_back( std::pair<int, int>(tile->getX(), tile->getY()) );
     }
-    delete mapSimulation;
 
     return coordinates;
 }
 
-std::vector<Tile*> AIbuildAllPaths(Map& map){
-    std::vector< std::vector<Tile*> > validPaths;
+std::vector<std::pair<int, int>> HeroAI::concatCoordinates(const std::vector<std::pair<int, int>>& front, const std::vector<std::pair<int, int>>& back) {
+    std::vector<std::pair<int, int>> full = front;
+    full.insert( full.end(), back.begin(), back.end() );
+    return full;
+}
 
-    return validPaths[0];
+int HeroAI::heuristic(Tile* from, Tile* to){
+    return abs(to->getX() - from->getX()) + abs(to->getY() - from->getY());
+}
+
+std::vector<std::pair<int, int>> HeroAI::plan() {
+
+    Tile* heroPosition = playMap.getHero()->getPosition();
+    setConsolCursorToOnMap(heroPosition->getX(), heroPosition->getY());
+    setConsolColor(WHITE, BLUE);
+    std::cout << "?";
+    setConsolColor(WHITE);
+
+    validPaths.clear();
+    searchPaths(playMap, std::vector<std::pair<int,int>>() );
+
+    if(validPaths.size() == 0)
+        return std::vector<std::pair<int, int>>();
+
+    std::vector<std::pair<int, int>> shortestPath = validPaths[0];
+
+    for(auto path : validPaths){
+        if(path.size() < shortestPath.size())
+            shortestPath = path;
+    }
+
+    return shortestPath;
+}
+
+void HeroAI::searchPaths(Map map, std::vector<std::pair<int, int>> coordinatesSoFar){
+
+    Hero* hero = map.getHero();
+    Tile* heroPosition = hero->getPosition();
+
+    std::vector<Tile*> directPath = findShortestPathToAny((char)TREASURE, map, true, heroPosition);
+    if(directPath.size() > 0){
+        std::vector<std::pair<int, int>> fullPath = concatCoordinates(coordinatesSoFar, toCoordinates(directPath));
+        if(validPaths.size() == 0 || validPaths.size() != 0 && fullPath.size() < validPaths[0].size() )
+            validPaths.push_back( fullPath );
+    }
+
+    std::vector<Tile*> anyPath = findShortestPathToAny((char)TREASURE, map, false, heroPosition);
+    if(anyPath.size() > 0 ){
+
+        Tile* monsterTile = isOnPath(anyPath, (char)MONSTER);
+        if( monsterTile != NULL ){
+
+            if( hero->hasWeapon() ){
+
+                if( hero->getHealth() == 2 ){
+                    std::vector<Tile*> movement = moveHeroToTarget( map, monsterTile );
+                    searchPaths( map, concatCoordinates(coordinatesSoFar, toCoordinates(movement)) );
+                }
+                else{
+
+                    std::vector<Tile*> potionPath = findShortestPathToAny((char)POTION, map, false, heroPosition);
+                    if(potionPath.size() > 0){
+                        std::vector<Tile*> movement = moveHeroToTarget( map, potionPath.back() );
+                        searchPaths( map, concatCoordinates(coordinatesSoFar, toCoordinates(movement)) );
+                    }
+                    else{
+                        //Error there is no free path to any potion
+                    }
+                }
+            }
+            else{
+                
+                std::vector<Tile*> weaponPath = findShortestPathToAny((char)WEAPON, map, false, heroPosition);
+                if(weaponPath.size() > 0){
+                    std::vector<Tile*> movement = moveHeroToTarget( map, weaponPath.back() );
+                    searchPaths( map, concatCoordinates(coordinatesSoFar, toCoordinates(movement)) );
+                }
+                else{
+                    //Error there is no free path to any weapon
+                }
+            }
+        }
+        else{
+            //Error there is no free path to any treasure and there is no monster on the path
+        }
+    }
+    else{
+        //Error there is no path to any treasure
+    }
+}
+
+bool HeroAI::isAIExecuting(){
+    return executing;
 }
 
 Tile* HeroAI::chooseTarget(Map& map, std::string& errorText) {
@@ -1047,11 +1173,11 @@ Tile* HeroAI::chooseTarget(Map& map, std::string& errorText) {
     return heroPosition;
 }
 
-std::vector<Tile*> HeroAI::findShortestPathToAny(char goalTile, Map& map, bool interacting, Tile* start)
-{
+std::vector<Tile*> HeroAI::findShortestPathToAny(char goalTile, Map& map, bool interacting, Tile* start){
+
     std::vector< std::vector<Tile*> > paths;
 
-    std::vector<Tile*> targets = map.findAll((char)TREASURE);
+    std::vector<Tile*> targets = map.findAll(goalTile);
 
     for (Tile* target : targets) {
         std::vector<Tile*> pathToTarget = aStarSearchPath(map, interacting, start, target);
@@ -1071,161 +1197,7 @@ std::vector<Tile*> HeroAI::findShortestPathToAny(char goalTile, Map& map, bool i
     return shortestPath;
 }
 
-std::vector<std::pair<int, int>> HeroAI::planWithTraps()
-{
-    Map* mapSimulation = new Map( playMap.clone() );
-    std::vector<std::pair<int, int>> disabledTrapCoordinates;
-    std::vector<Tile*> targets;
-    std::vector<Tile*> movementHistory;
-    int targetIndex = 0;
-
-    Tile* newTarget = chooseTargetWithTraps(*mapSimulation);
-    if (newTarget == NULL)
-        return std::vector<std::pair<int, int>>();
-    else{
-        targets.push_back(newTarget);
-    }
-
-    while ( !mapSimulation->getHero()->isEscaped() ) {
-        std::vector<Tile*> movements = moveHeroToTarget(*mapSimulation, targets[targetIndex]);
-        movementHistory.insert( movementHistory.end(), movements.begin(), movements.end() );
-        targetIndex++;
-
-        if (mapSimulation->getHero()->isEscaped()) {
-            if ( !mapSimulation->getHero()->hasTreasure() ) {
-                Tile* originalHeroPosition = playMap.getHero()->getPosition();
-                int hX = originalHeroPosition->getX();
-                int hY = originalHeroPosition->getY();
-
-                Tile* exitPositionSimulation = mapSimulation->getHero()->getPosition();
-                int eX = exitPositionSimulation->getX();
-                int eY = exitPositionSimulation->getY();
-                std::vector<Tile*> path = aStarSearchPath(playMap, true, playMap.getTile(hX, hY), playMap.getTile(eX, eY));
-
-                movementHistory = path;
-            }
-
-            break;
-        }
-
-        newTarget = chooseTargetWithTraps(*mapSimulation);
-        if (newTarget == NULL) {
-            std::vector<Tile*> backwardMovements = movementHistory;
-            std::reverse(backwardMovements.begin(), backwardMovements.end());
-            
-            Tile* lastTrap = NULL;
-            for (auto tile : backwardMovements) {
-                std::stringstream characters;
-                tile->draw(characters);
-                
-                if (lastTrap == NULL && characters.str()[0] == (char)WALL) {
-                    lastTrap = tile;
-                    break;
-                }
-            }
-            if(lastTrap == NULL)
-                return std::vector<std::pair<int, int>>();
-
-            Map* newMapSimulation = new Map(playMap.clone());
-            int tX = lastTrap->getX();
-            int tY = lastTrap->getY();
-            disabledTrapCoordinates.push_back(std::pair<int, int>(tX, tY));
-
-            for (auto trapCoord : disabledTrapCoordinates) {
-                Tile* trapToChange = newMapSimulation->getTile(trapCoord.first, trapCoord.second);
-                Tile* wall = new Wall(trapCoord.first, trapCoord.second);
-                newMapSimulation->tiles[ trapCoord.second*newMapSimulation->width + trapCoord.first ] = wall;
-                delete trapToChange;
-            }
-
-            newMapSimulation->setNeighbourConnections();
-            delete mapSimulation;
-            mapSimulation = newMapSimulation;
-
-            targets.clear();
-            newTarget = chooseTargetWithTraps(*mapSimulation);
-            if (newTarget == NULL) {
-
-            }
-            else {
-                targets.push_back(newTarget);
-            }
-            targetIndex = 0;
-            movementHistory.clear();
-
-        }
-        else {
-            targets.push_back(newTarget);
-        }
-    }
-
-    std::vector<std::pair<int, int>> coordinates;
-    for (auto tile : movementHistory) {
-        coordinates.push_back( std::pair<int, int>(tile->getX(), tile->getY()) );
-    }
-
-    delete mapSimulation;
-    return coordinates;
-}
-
-Tile* HeroAI::chooseTargetWithTraps(Map& map) {
-    Tile* target = NULL;
-    Tile* exitTarget = map.findFirst((char)EXIT);
-
-    if (map.getHero()->hasTreasure()) {
-        target = exitTarget;
-    }
-    else {
-        target = map.findFirst((char)TREASURE);
-    }
-
-    std::vector<Tile*> path = aStarSearchPath(map, false, map.getHero()->getPosition(), target);
-    if (path.size() == 0) {
-        return NULL;
-    }
-
-    Tile* monsterTile = isOnPath(path, (char)MONSTER);
-    if (monsterTile != NULL) {
-
-        if (map.getHero()->hasWeapon()) {
-            if (map.getHero()->getHealth() == 2) {
-                target = monsterTile;
-            }
-            else {
-                Tile* secondaryTarget = map.findFirst((char)POTION);
-                
-                std::vector<Tile*> secondaryPath = aStarSearchPath(map, true, map.getHero()->getPosition(), secondaryTarget);
-                if (secondaryPath.size() == 0) {
-                    if(target == exitTarget)
-                        return NULL;
-                    target = exitTarget;
-                }
-                else {
-                    target = secondaryTarget;
-                }
-            }
-        }
-        else {
-            Tile* secondaryTarget = map.findFirst((char)WEAPON);
-
-            std::vector<Tile*> secondaryPath = aStarSearchPath(map, true, map.getHero()->getPosition(), secondaryTarget);
-            if (secondaryPath.size() == 0) {
-                if (target == exitTarget)
-                    return NULL;
-                target = exitTarget;
-            }
-            else {
-                target = secondaryTarget;
-            }
-        }
-
-    }
-
-    return target;
-}
-
-Tile* HeroAI::isOnPath(std::vector<Tile*> path, char toFind)
-{
+Tile* HeroAI::isOnPath(std::vector<Tile*> path, char toFind){
     std::stringstream characters;
     char c;
 
@@ -1241,9 +1213,29 @@ Tile* HeroAI::isOnPath(std::vector<Tile*> path, char toFind)
     return NULL;
 }
 
-void HeroAI::executePlan(std::vector<std::pair<int, int>> coordinates)
-{
+void HeroAI::executePlan(std::vector<std::pair<int, int>> coordinates){
     std::vector<Tile*> path;
+
+    if(coordinates.size() == 0){
+        Tile* heroPosition = playMap.getHero()->getPosition();
+        
+        for(int i = 0; i < 2; i++){
+            setConsolCursorToOnMap( heroPosition->getX(), heroPosition->getY() );
+            setConsolColor( WHITE, BLUE );
+            std::cout << "!";
+            setConsolColor(WHITE);
+            Sleep(250);
+
+            setConsolCursorToOnMap(heroPosition->getX(), heroPosition->getY());
+            setConsolColor(WHITE);
+            std::cout << "h";
+            Sleep(250);
+        }
+
+        executing = false;
+        return;
+    }
+
     for (int i = 0; i < coordinates.size(); i++) {
         path.push_back( playMap.getTile(coordinates[i].first, coordinates[i].second) );
     }
@@ -1262,14 +1254,15 @@ void HeroAI::executePlan(std::vector<std::pair<int, int>> coordinates)
                 executing = false;
             }
             Game::handleKeyInputs();
-            if (!executing)
+            if (!executing){
+                Game::render();
                 return;
+            }
         }
     }
 }
 
-std::vector<Tile*> HeroAI::moveHeroToTarget(Map& map, Tile* target)
-{
+std::vector<Tile*> HeroAI::moveHeroToTarget(Map& map, Tile* target){
     std::vector<Tile*> movementHistory;
 
     std::vector<Tile*> path = aStarSearchPath(map, true, map.getHero()->getPosition(), target);
@@ -1286,11 +1279,11 @@ std::vector<Tile*> HeroAI::moveHeroToTarget(Map& map, Tile* target)
     return movementHistory;
 }
 
-void HeroAI::toggleAI()
-{
+void HeroAI::toggleAI(){
+
     executing = !executing;
 
     if (executing) {
-        executePlan( planWithTraps() );
+        executePlan( plan() );
     }
 }

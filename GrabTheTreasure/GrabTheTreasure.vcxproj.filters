@@ -34,5 +34,6 @@
     <Text Include="ui_victory.txt" />
     <Text Include="ui_gameover.txt" />
     <Text Include="ui_forfeit.txt" />
+    <Text Include="gem_animation.txt" />
   </ItemGroup>
 </Project>
