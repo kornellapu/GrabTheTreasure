@@ -11,6 +11,13 @@
 
 <br>
 
+
+> **Figyelem!**  
+> *Lehetséges, hogy a használt kódtáblák miatt az első és utolsó képernyők nem jelennek meg helyesen, ebben az esetben is működőképes az alkalmazás a használati útmutató szerint.*  
+>
+> *Játék közben a térképnek látszódnia kell minden esetben, így a játék játszható marad, rossz / hiányzó kódtábla mellett is!* 
+> Azonban az interface-el baj lehet a speciális karakterek miatt...
+
 ---
 
 ## Tartalom:
