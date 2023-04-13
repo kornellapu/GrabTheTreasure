@@ -18,6 +18,13 @@
 > *Játék közben a térképnek látszódnia kell minden esetben, így a játék játszható marad, rossz / hiányzó kódtábla mellett is!* 
 > Azonban az interface-el baj lehet a speciális karakterek miatt...
 
+<br>
+
+> **Figyelem!**  
+> *Csak ***Microsoft Windows*** operációs rendszeren működik az elkészített alkalmazás! (A használt könytárak miatt.)*
+
+<br>
+
 ---
 
 ## Tartalom:
