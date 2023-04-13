@@ -978,7 +978,7 @@ void Game::waitOnStartScreen(){
     colors.push_back( LIGHTYELLOW );
     colors.push_back( WHITE );
 
-    std::vector<std::string> animation = readFileByLines("gem_animation.txt");
+    std::vector<std::string> animation = readFileByLines("ui_gem_animation.txt");
 
     while (waiting){
         frameIndex = frameIndex % 20;
