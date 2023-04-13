@@ -179,8 +179,6 @@ class Hero : public Drawable {
     Treasure* treasure = NULL;
     bool escaped = false;
 
-    friend class UIHeroInterface;
-
 public:
     void move(Direction dir);
     void setPosition(Tile& position);

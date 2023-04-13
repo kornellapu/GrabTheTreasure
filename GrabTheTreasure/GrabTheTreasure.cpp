@@ -603,18 +603,18 @@ void UIHeroInterface::draw(std::ostream& out){
     state = state % 2;
 
     std::string weapon = "   ?   ";
-    std::string heart1 = "--";
-    std::string heart2 = "--";
+    std::string heart1 = "  ";
+    std::string heart2 = "  ";
     std::string treasure = "   ?   ";
 
     if (hero != NULL) {
-        if (hero->weapon != NULL)
+        if (hero->hasWeapon())
             weapon = "C~|===>";
-        if (hero->health > 0)
+        if (hero->getHealth() > 0)
             heart1 = "<3";
-        if (hero->health > 1)
+        if (hero->getHealth() > 1)
             heart2 = "<3";
-        if (hero->treasure != NULL)
+        if (hero->hasTreasure())
             treasure = ".oO8Oo.";
     }
 
@@ -1161,6 +1161,8 @@ std::vector<std::pair<int, int>> HeroAI::plan() {
 }
 
 void HeroAI::searchPaths(Map map, std::vector<std::pair<int, int>> coordinatesSoFar){
+    if(validPaths.size() > 0 && validPaths.at(0).size() < coordinatesSoFar.size())
+        return;
 
     Hero* hero = map.getHero();
     Tile* heroPosition = hero->getPosition();
