@@ -63,14 +63,15 @@ enum Color {
     WHITE       = 15,
 };
 
-
 const int CONSOL_WIDTH  = 80;
 const int CONSOL_HEIGHT = 25;
 
 const int TEXT_POS_X = 29;
 const int TEXT_POS_Y = 14;
-const std::string pressKeyExitText = "Press any key to Exit ";
+const std::string pressKeyExitText = "Press any key to Exit";
 void showText(int x, int y, std::string text);
+
+const int M_VKEY = 0x4D;
 
 void showConsoleCursor(bool showFlag);
 void resizeConsolWindow(int width, int height);
@@ -95,6 +96,8 @@ class Game {
     static Map map;
     static UIHeroInterface ui;
     static HeroAI ai;
+
+    static std::vector<std::string> readFileByLines(std::string filePath);
 public:
     static void setState(GameState newState);
     static bool handleKeyInputs();
@@ -104,7 +107,8 @@ public:
     static Map* getMap();
     static void render();
     static bool isAIExecuting();
-    static void animateStartScreen(int frameIndex);
+    static void waitOnStartScreen();
+    static void animateColors(std::string filePath, std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>> bounds, std::vector<Color> colors);
 };
 
 class Drawable {
@@ -192,7 +196,6 @@ public:
     void stash(Treasure& treasure);
     void escape();
     virtual void draw(std::ostream& out);
-
 };
 
 class Interactable : public Drawable {

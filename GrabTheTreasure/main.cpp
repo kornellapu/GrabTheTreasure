@@ -7,20 +7,10 @@ int main()
     resizeConsolWindow(CONSOL_WIDTH, CONSOL_HEIGHT);
     showConsoleCursor(false);
 
-
     Game::setState(GAMESTART);
     Game::render();
 
-    bool waiting = true;
-    int frameCount = 0;
-    while(waiting){
-        Game::animateStartScreen(frameCount);
-
-        if(GetAsyncKeyState(VK_RETURN) & 0x01)
-            waiting = false;
-
-        frameCount++;
-    }
+    Game::waitOnStartScreen();
 
     Game::setState(GAMEPLAYING);
     Game::render();
@@ -37,8 +27,10 @@ int main()
     showText(TEXT_POS_X, TEXT_POS_Y, pressKeyExitText);
 
     waitAnyConsolKeyPress(100);
+    showConsoleCursor(true);
 
     SetConsoleOutputCP(originalCodePage);
+    system("CLS");
 };
 
 

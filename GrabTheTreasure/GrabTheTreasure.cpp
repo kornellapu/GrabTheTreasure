@@ -810,7 +810,7 @@ bool Game::handleKeyInputs(){
         setState(GAMEOVER);
         render();
     }
-    if (GetAsyncKeyState(0x4D /*m*/) & 0x01) {
+    if (GetAsyncKeyState(M_VKEY) & 0x01) {
         ai.toggleAI();
     }
 
@@ -825,6 +825,20 @@ GameState Game::state = GAMESTART;
 Map Game::map = Map( readFile("map.txt") );
 UIHeroInterface Game::ui = UIHeroInterface(*map.getHero());
 HeroAI Game::ai = HeroAI( Game::map );
+
+std::vector<std::string> Game::readFileByLines(std::string filePath){
+
+    std::string fileString = readFile(filePath);
+    std::string delimiter = "\n";
+    size_t pos = 0;
+    std::vector<std::string> line;
+    while ((pos = fileString.find(delimiter)) != std::string::npos) {
+        line.push_back(fileString.substr(0, pos));
+        fileString.erase(0, pos + delimiter.length());
+    }
+
+    return line;
+}
 
 void Game::setState(GameState newState){
     if (state == GAMESTART && newState == GAMESTART) {
@@ -862,7 +876,6 @@ void Game::render() {
     }
     else if (state == GAMESTART || state == GAMEFORFEIT || state == GAMEOVER || state == GAMEVICTORY) {
         std::string filePath;
-        int waitTimeMs = 0;
 
         switch (state)
         {
@@ -883,9 +896,6 @@ void Game::render() {
         std::string scene = readFile(filePath);
         system("CLS");
         std::cout << scene;
-
-        if (waitTimeMs > 0)
-            waitAnyConsolKeyPress(waitTimeMs);
     } 
 }
 
@@ -922,25 +932,69 @@ bool Game::isAIExecuting(){
     return ai.isAIExecuting();
 }
 
-void Game::animateStartScreen(int frameIndex){
-    frameIndex = frameIndex % 14;
+void Game::animateColors(std::string filePath, std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>> bounds, std::vector<Color> colors){
+    std::vector<std::string> lines = readFileByLines(filePath);
+    
+    for(int i = 0; i < bounds.size(); i++){
+        int startX = bounds[i].first.first;
+        int startY = bounds[i].first.second;
+        int endX = bounds[i].second.first;
+        int endY = bounds[i].second.second;
 
-    std::string animationFile = readFile("gem_animation.txt");
-    int startLine = 5;
-    int startColumn = 37;
-
-    std::string delimiter = "\n";
-    size_t pos = 0;
-    std::vector<std::string> lines;
-    while ((pos = animationFile.find(delimiter)) != std::string::npos) {
-        lines.push_back(animationFile.substr(0, pos));
-        animationFile.erase(0, pos + delimiter.length());
+        for(int y = startY; y <= endY; y++){
+            setConsolCursorTo(y, startX);
+            for(int x = startX; x <= endX; x++){
+                int rndIndex = rand() % colors.size();
+                setConsolColor( colors[rndIndex] );
+                char c = lines[y].at(x);
+                std::cout << c;
+            }
+        }
     }
 
-    setConsolCursorTo(startLine, startColumn);
-    std::cout << lines[frameIndex];
+    setConsolColor(WHITE);
+}
 
-    Sleep(100);
+void Game::waitOnStartScreen(){
+    int frameIndex = 0;
+    int startLine = 5;
+    int startColumn = 37;
+    bool waiting = true;
+
+    std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>> bounds;
+    std::pair<int, int>  topLeft(24, 16), botRight(37, 20);
+    bounds.push_back( std::pair<std::pair<int, int>, std::pair<int, int>>(topLeft, botRight) );
+    topLeft.first = 39, topLeft.second = 17, botRight.first = 49, botRight.second = 17;
+    bounds.push_back( std::pair<std::pair<int, int>, std::pair<int, int>>(topLeft, botRight) );
+    topLeft.second = 20, botRight.second = 20;
+    bounds.push_back( std::pair<std::pair<int, int>, std::pair<int, int>>(topLeft, botRight) );
+    topLeft.first = 42, topLeft.second = 18, botRight.first = 42, botRight.second = 19;
+    bounds.push_back( std::pair<std::pair<int, int>, std::pair<int, int>>(topLeft, botRight) );
+    topLeft.first = 48, topLeft.second = 19, botRight.first = 49, botRight.second = 19;
+    bounds.push_back(std::pair<std::pair<int, int>, std::pair<int, int>>(topLeft, botRight));
+
+    std::vector<Color> colors;
+    colors.push_back( YELLOW );
+    colors.push_back( LIGHTYELLOW );
+    colors.push_back( WHITE );
+
+    std::vector<std::string> animation = readFileByLines("gem_animation.txt");
+
+    while (waiting){
+        frameIndex = frameIndex % 20;
+
+        setConsolCursorTo(startLine, startColumn);
+        std::cout << animation[frameIndex];
+
+        animateColors("ui_start.txt", bounds, colors);
+
+        Sleep(150);
+
+        if (GetAsyncKeyState(VK_RETURN) & 0x01)
+            waiting = false;
+
+        frameIndex++;
+    }
 }
 
 HeroAI::HeroAI(Map& map) : playMap(map){ }
@@ -1138,7 +1192,7 @@ void HeroAI::searchPaths(Map map, std::vector<std::pair<int, int>> coordinatesSo
                         searchPaths( map, concatCoordinates(coordinatesSoFar, toCoordinates(movement)) );
                     }
                     else{
-                        //Error there is no free path to any potion
+                        return;
                     }
                 }
             }
@@ -1150,16 +1204,16 @@ void HeroAI::searchPaths(Map map, std::vector<std::pair<int, int>> coordinatesSo
                     searchPaths( map, concatCoordinates(coordinatesSoFar, toCoordinates(movement)) );
                 }
                 else{
-                    //Error there is no free path to any weapon
+                    return;
                 }
             }
         }
         else{
-            //Error there is no free path to any treasure and there is no monster on the path
+            return;
         }
     }
     else{
-        //Error there is no path to any treasure
+        return;
     }
 }
 
